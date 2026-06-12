@@ -48,7 +48,7 @@ Since this is a custom extension, you can install it locally as a developer:
 ## 🧠 How to Use
 
 1.  Go to any LeetCode contest ranking page. For example:
-    `https://leetcode.com/contest/weekly-contest-400/ranking/`
+    `https://leetcode.com/contest/weekly-contest-369/ranking/`
 2.  Click the **LeetCode Contest User Search** icon in your Chrome toolbar.
 3.  Click the **Start User Search** button in the popup.
 4.  In the floating panel that appears in the top-right corner:
