@@ -3,11 +3,28 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>LeetCode Search</title>
+<title>LeetSeek - Contest User Search</title>
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <button id="startSearchBtn">Start User Search</button>
+  <div class="popup-card">
+    <div class="header">
+      <span class="logo-icon">🔍</span>
+      <h1 class="logo-title">LeetSeek</h1>
+    </div>
+
+    <!-- Active Search Control -->
+    <div id="mainContainer" style="display: none;">
+      <p class="info-text">Open the search panel to locate specific users or keyword groups on the leaderboards.</p>
+      <button id="startSearchBtn" class="btn primary-btn">Start User Search</button>
+    </div>
+
+    <!-- Error/Wrong Page Control -->
+    <div id="statusContainer">
+      <p id="errorMessage" class="warn-text">Detecting active tab...</p>
+      <button id="openLeetcodeBtn" class="btn secondary-btn">Go to LeetCode Contests</button>
+    </div>
+  </div>
 
   <script src="popup.js"></script>
 </body>
