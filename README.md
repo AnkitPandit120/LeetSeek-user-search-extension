@@ -35,13 +35,13 @@ Since this is a custom extension, you can install it locally as a developer:
 
 1.  **Download or Clone** this repository to your computer:
     ```bash
-    git clone https://github.com/ankitpandit/leetcode-rank-search-extension.git
+    git clone https://github.com/AnkitPandit120/LeetSeek-user-search-extension.git
     ```
     *(Alternatively, download the ZIP archive and extract it.)*
 2.  Open Google Chrome and navigate to `chrome://extensions/`.
 3.  Enable **Developer mode** using the toggle switch in the top-right corner.
 4.  Click the **Load unpacked** button in the top-left corner.
-5.  Select the extracted project folder (`leetcode-rank-search-extension-main`).
+5.  Select the extracted project folder (`LeetSeek-user-search-extension`).
 
 ---
 
@@ -64,7 +64,7 @@ Since this is a custom extension, you can install it locally as a developer:
 ## 📂 File Structure
 
 ```
-leetcode-rank-search-extension/
+LeetSeek-user-search-extension/
 ├── manifest.json        # Extension configuration (Manifest V3)
 ├── background.js        # Automates programmatic content-script injection
 ├── content.js           # Core scraping, state management, and UI panel logic
@@ -86,4 +86,4 @@ This project is licensed under the MIT License. Feel free to use, modify, and di
 
 ## 🙌 Credits
 
-*   Developed with ❤️ by **[Ankit Pandit](https://github.com/ankitpandit)**
+*   Developed with ❤️ by **[Ankit Pandit](https://github.com/ankitpandit120)**
