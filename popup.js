@@ -108,6 +108,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Initialize original Contest Search logic
   await initContestSearch();
+
+  // Footer Link Redirect
+  const footerLink = document.getElementById("footer-link");
+  if (footerLink) {
+    footerLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      chrome.tabs.create({ url: footerLink.getAttribute("href") });
+    });
+  }
 });
 
 // ==========================================

@@ -971,6 +971,7 @@ body.light-theme .greeting-text span {
 
 /* Footer Signature Styles */
 .footer-signature {
+  display: block;
   text-align: center;
   font-size: 10px;
   font-weight: 600;
@@ -979,6 +980,8 @@ body.light-theme .greeting-text span {
   margin-top: 18px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
   transition: color 0.3s, opacity 0.3s;
 }
 
