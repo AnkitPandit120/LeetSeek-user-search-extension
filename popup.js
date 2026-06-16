@@ -193,7 +193,7 @@ function promptForUsername(currentVal = "") {
   const container = document.getElementById("user-greeting-section");
   container.innerHTML = `
     <div class="onboard-form">
-      <div class="onboard-title">Set your LeetCode Username:</div>
+      <div class="onboard-title">Set Username:</div>
       <div class="onboard-input-group">
         <input type="text" id="my-username-input" placeholder="e.g. Sid_Jiyani" value="${escapeHtml(currentVal)}" />
         <button id="save-username-btn" class="btn primary-btn">Save</button>
@@ -291,8 +291,20 @@ function renderFriendsList() {
       return `
         <div class="friend-card">
           <div class="friend-header">
-            <a href="https://leetcode.com/u/${escapeHtml(friend.username)}/" target="_blank" class="friend-name-link">${escapeHtml(friend.username)}</a>
-            <button class="friend-delete-btn" data-username="${escapeHtml(friend.username)}" title="Delete friend">❌</button>
+            <a href="https://leetcode.com/u/${escapeHtml(friend.username)}/" class="friend-name-link" title="View LeetCode Profile">
+              ${escapeHtml(friend.username)}
+              <svg class="external-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+            <button class="friend-delete-btn" data-username="${escapeHtml(friend.username)}" title="Delete friend">
+              <svg class="delete-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
           <table class="stats-table">
             <thead>
@@ -320,9 +332,19 @@ function renderFriendsList() {
 
     // 4. Attach Delete Listeners
     container.querySelectorAll(".friend-delete-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent card redirect click from firing
         const usernameToDelete = btn.getAttribute("data-username");
         deleteFriend(usernameToDelete);
+      });
+    });
+
+    // 5. Attach Redirect Listeners to profile links
+    container.querySelectorAll(".friend-name-link").forEach(link => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const url = link.getAttribute("href");
+        chrome.tabs.create({ url });
       });
     });
   });
