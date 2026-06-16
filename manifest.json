@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "LeetCode Contest User Search",
+  "name": "LeetPulse",
   "version": "1.0",
   "permissions": ["scripting", "activeTab", "tabs", "storage"],
   "host_permissions": [

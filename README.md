@@ -1,12 +1,12 @@
-# 🔍 LeetSeek & LeetCode Stalker Extension ⚡
+# 🔍 LeetPulse Extension ⚡
 
-A powerful, premium browser extension that combines two essential LeetCode tools in one gorgeous dashboard: a **Friend Stalker & Tracker** to compare stats/submissions and a **Contest User & Keyword Search** to locate competitors on active contest leaderboards.
+A powerful, premium browser extension that combines two essential LeetCode tools in one gorgeous dashboard: a **Friend Progress & Stats Tracker (LeetPulse)** to compare stats/submissions and a **Contest User & Keyword Search** to locate competitors on active contest leaderboards.
 
 ---
 
 ## 🌟 Key Features
 
-### 👥 1. LeetCode Friend Stalker
+### 👥 1. LeetPulse Stats Tracker
 Keep tabs on your coding circle and motivate each other with real-time analytics:
 *   **Personal Onboarding:** Configure your LeetCode username to receive a customized greeting banner.
 *   **Track Coding Progress:** Add friends by LeetCode username to load their Total Solved breakdown (Easy, Medium, Hard) and official Contest Ratings.
@@ -64,7 +64,7 @@ LeetSeek-user-search-extension/
 ├── manifest.json        # Manifest V3 configuration (added local storage & host permissions)
 ├── background.js        # Automates programmatic content script injection
 ├── content.js           # Core scraping, state management, and UI panel contest logic
-├── popup.html           # Multi-tab layout featuring Stalker, Contest Search, & Theme buttons
+├── popup.html           # Multi-tab layout featuring LeetPulse, Contest Search, & Theme buttons
 ├── popup.js             # Onboarding, storage, drawing engine, GraphQL parser & mock loader
 ├── styles.css           # Custom properties styling (dark/light themes, animations, variables)
 ├── icon16.png           # Toolbar icon (16x16)
