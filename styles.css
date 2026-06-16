@@ -969,3 +969,21 @@ body.light-theme .greeting-text span {
   text-shadow: none;
 }
 
+/* Footer Signature Styles */
+.footer-signature {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  opacity: 0.65;
+  margin-top: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: color 0.3s, opacity 0.3s;
+}
+
+.footer-signature:hover {
+  color: var(--accent-color);
+  opacity: 0.95;
+}
+
