@@ -1,29 +1,42 @@
-# 🔍 LeetCode Contest User & Keyword Search Extension
+# 🔍 LeetSeek & LeetCode Stalker Extension ⚡
 
-A powerful and premium Chrome extension designed to **locate competitors, friends, and keyword groups** in **LeetCode contest rankings** effortlessly. Instead of manually clicking through hundreds of pages, this extension automates the pagination, scrapes rankings in real-time, and shows matching usernames instantly in a beautiful floating panel.
+A powerful, premium browser extension that combines two essential LeetCode tools in one gorgeous dashboard: a **Friend Stalker & Tracker** to compare stats/submissions and a **Contest User & Keyword Search** to locate competitors on active contest leaderboards.
 
 ---
 
 ## 🌟 Key Features
 
-*   **🔎 Multi-User & Substring Matching**: Enter multiple usernames or keywords (comma-separated) to search for several accounts simultaneously.
-*   **⚙️ Two Match Modes**:
-    *   **Exact Name Match**: Performs a case-insensitive exact check on the username. In this mode, the search **terminates early** as soon as all targeted users are found.
-    *   **Keyword/Partial Match**: Performs a case-insensitive substring search (e.g., searching for `tech` will find `tech_coder`, `techmaster`, etc.).
-*   **🔢 Customizable Page Range**: Choose specific boundaries by defining `Start Page` and `End Page` (e.g., searching only page 5 to 25).
-*   **📊 Real-time Progress & Results**:
-    *   Dynamic visual progress bar indicating the exact percentage of pages searched.
-    *   A clean, scrollable results table showing **User** and the **Page** where they were found.
-*   **🛑 Stop and Reset Actions**: Stop the search process mid-way with a single click, or reset to tweak your search query.
-*   **💫 Glassmorphic Dark UI**: A modern, dark-themed floating widget that integrates seamlessly with LeetCode's interface.
-*   **💾 Persistent Search Session**: Leverages `sessionStorage` to maintain state, meaning the search auto-resumes and updates smoothly even after automated page redirections and reloads.
-*   **⚡ Automatic Service worker script-injection**: No more "Could not establish connection" errors. The extension dynamically injects the search content script into all active LeetCode contest tabs upon installation or reload.
+### 👥 1. LeetCode Friend Stalker
+Keep tabs on your coding circle and motivate each other with real-time analytics:
+*   **Personal Onboarding:** Configure your LeetCode username to receive a customized greeting banner.
+*   **Track Coding Progress:** Add friends by LeetCode username to load their Total Solved breakdown (Easy, Medium, Hard) and official Contest Ratings.
+*   **Collapsible Recent AC List:** Click the **Recent AC ▼** accordion on any friend's card to reveal their top 5 recently solved questions with relative time labels (e.g., `2h ago`). Clicking a question opens it directly in a new tab.
+*   **Profile Redirection:** Click any friend's username to jump directly to their LeetCode profile page.
+*   **Search & Dynamic Filters:** Search friends list instantly and sort them alphabetically, by Total Solved count, or by Contest Rating.
+*   **Silent Background Refresh:** Auto-refreshes all stats silently in the background on startup, keeping cached stats current without network lags.
+
+### 📊 2. Visual Progress Graph Modal
+Visualize and compare coding metrics across your circle:
+*   **Stacked Solved Comparison:** Renders stacked columns representing easy (teal), medium (yellow), and hard (red) counts, with total numbers shown above the columns.
+*   **Contest Rating Chart:** Toggles to display official competitive ratings side-by-side.
+*   **High-DPI Scaling:** Draws on a native HTML5 2D Canvas context with device-pixel-ratio scaling to guarantee crisp rendering without external libraries.
+
+### 🌓 3. Synced Day/Night Theme Toggles
+*   **Midnight Dark Theme:** Sleek glassmorphism overlay style with vibrant difficulty-color accents.
+*   **Day Light Theme:** A warm, clean, high-contrast light theme with optimized color palettes for daytime readability.
+*   **Synchronized Controls:** Theme toggles in both tab headers keep your selections synchronized across all active extension menus.
+
+### 🔍 4. LeetSeek Live Contest Search
+*   **Multi-User Lookup:** Search multiple comma-separated usernames or keywords on active contest pages.
+*   **Match Modes:** Run exact checks (terminates early when matches are found) or partial/keyword substring matches.
+*   **Range Customization:** Set custom starting and ending page limits for scans.
+*   **Dynamic Scraper Panel:** Monitors live page iterations, shows percentage progress bars, and tabulates matches with page numbers.
 
 ---
 
 ## 📸 Preview
 
-Here’s the extension interface inside the contest page:
+Here’s the extension interface:
 
 ![LeetCode Contest User Search Demo](Screenshot.png)
 
@@ -31,48 +44,31 @@ Here’s the extension interface inside the contest page:
 
 ## 📥 Installation
 
-Since this is a custom extension, you can install it locally as a developer:
+Install it locally in your Chrome browser:
 
-1.  **Download or Clone** this repository to your computer:
+1.  **Download or Clone** this repository:
     ```bash
     git clone https://github.com/AnkitPandit120/LeetSeek-user-search-extension.git
     ```
-    *(Alternatively, download the ZIP archive and extract it.)*
-2.  Open Google Chrome and navigate to `chrome://extensions/`.
+2.  Open Google Chrome and navigate to: `chrome://extensions/`
 3.  Enable **Developer mode** using the toggle switch in the top-right corner.
 4.  Click the **Load unpacked** button in the top-left corner.
-5.  Select the extracted project folder (`LeetSeek-user-search-extension`).
-
----
-
-## 🧠 How to Use
-
-1.  Go to any LeetCode contest ranking page. For example:
-    `https://leetcode.com/contest/weekly-contest-369/ranking/`
-2.  Click the **LeetCode Contest User Search** icon in your Chrome toolbar.
-3.  Click the **Start User Search** button in the popup.
-4.  In the floating panel that appears in the top-right corner:
-    *   Enter your target usernames or keywords separated by commas in the text field.
-    *   Select your preferred **Match Type** (*Exact Name* vs. *Keyword/Partial*).
-    *   Set the **Start Page** and **End Page** range.
-    *   Click **Start Search**.
-5.  The extension will automatically navigate through the pages, scan the rank table, update the progress bar, and list any matching users alongside the page number they are located on.
-6.  *Optional*: Click **🛑 Stop** to pause the search at any time, or close the panel to end the session.
+5.  Select the extracted project folder (`leetcode-rank-search-extension-main` or `LeetSeek-user-search-extension`).
 
 ---
 
 ## 📂 File Structure
 
-```
+```txt
 LeetSeek-user-search-extension/
-├── manifest.json        # Extension configuration (Manifest V3)
-├── background.js        # Automates programmatic content-script injection
-├── content.js           # Core scraping, state management, and UI panel logic
-├── popup.html           # Simple popup interface
-├── popup.js             # Extension button event handler
-├── styles.css           # Styling for the toolbar popup
+├── manifest.json        # Manifest V3 configuration (added local storage & host permissions)
+├── background.js        # Automates programmatic content script injection
+├── content.js           # Core scraping, state management, and UI panel contest logic
+├── popup.html           # Multi-tab layout featuring Stalker, Contest Search, & Theme buttons
+├── popup.js             # Onboarding, storage, drawing engine, GraphQL parser & mock loader
+├── styles.css           # Custom properties styling (dark/light themes, animations, variables)
 ├── icon16.png           # Toolbar icon (16x16)
-├── icon48.png           # Extension management page icon (48x48)
+├── icon48.png           # Extension page icon (48x48)
 └── icon128.png          # Web Store display icon (128x128)
 ```
 
@@ -86,4 +82,4 @@ This project is licensed under the MIT License. Feel free to use, modify, and di
 
 ## 🙌 Credits
 
-*   Developed with ❤️ by **[Ankit Pandit](https://github.com/ankitpandit120)**
+*   Developed with ❤️ by **[Ankit Pandit](https://github.com/AnkitPandit120)** x **techsfc**
