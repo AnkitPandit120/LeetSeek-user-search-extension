@@ -2,9 +2,10 @@
   "manifest_version": 3,
   "name": "LeetCode Contest User Search",
   "version": "1.0",
-  "permissions": ["scripting", "activeTab", "tabs"],
+  "permissions": ["scripting", "activeTab", "tabs", "storage"],
   "host_permissions": [
-    "https://leetcode.com/contest/*"
+    "https://leetcode.com/contest/*",
+    "https://leetcode.com/graphql/"
   ],
   "content_scripts": [
     {

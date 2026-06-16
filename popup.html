@@ -1,28 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>LeetSeek - Contest User Search</title>
-<link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LeetSeek & Stalker</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="popup-card">
-    <div class="header">
-      <span class="logo-icon">🔍</span>
-      <h1 class="logo-title">LeetSeek</h1>
+    <!-- Top Navigation Tabs -->
+    <div class="tabs-header">
+      <button class="tab-button active" data-tab="stalker-tab">Stalker</button>
+      <button class="tab-button" data-tab="search-tab">Contest Search</button>
     </div>
 
-    <!-- Active Search Control -->
-    <div id="mainContainer" style="display: none;">
-      <p class="info-text">Open the search panel to locate specific users or keyword groups on the leaderboards.</p>
-      <button id="startSearchBtn" class="btn primary-btn">Start User Search</button>
+    <!-- TAB 1: STALKER VIEW -->
+    <div id="stalker-tab" class="tab-content active">
+      <div class="header-stalker">
+        <h1 class="logo-title-stalker">LeetCode Stalker <span class="logo-icon-img">⚡</span></h1>
+      </div>
+
+      <!-- User Greeting Section -->
+      <div id="user-greeting-section" class="user-greeting-card">
+        <!-- Will be dynamically populated. Either:
+             1. Welcome: "Hello 👋, {Username} !" + "Change Username" link
+             2. Onboarding: "Set your LeetCode Username" input + "Save" button
+        -->
+        <div class="greeting-loading">Loading configuration...</div>
+      </div>
+
+      <!-- Add Friend Section -->
+      <div class="add-friend-section">
+        <div class="input-group">
+          <input type="text" id="friend-username-input" placeholder="Friend's username" />
+          <button id="add-friend-btn" class="btn primary-btn">Add</button>
+        </div>
+        <div id="add-friend-status" class="status-msg"></div>
+      </div>
+
+      <!-- Search & Filters Section -->
+      <div class="filter-section">
+        <div class="search-bar-container">
+          <input type="text" id="search-friends-input" placeholder="Search Friends" />
+          <button id="search-friends-btn" class="search-icon-btn" title="Search">🔍</button>
+        </div>
+        <div class="control-actions">
+          <select id="sort-friends-select" class="dropdown-select">
+            <option value="alpha">Sort Alphabetically</option>
+            <option value="total">Sort by Total Solved</option>
+            <option value="rating">Sort by Rating</option>
+          </select>
+          <button id="refresh-all-btn" class="refresh-btn" title="Refresh all statistics">🔄</button>
+        </div>
+      </div>
+
+      <!-- Friends List Container -->
+      <div id="friends-list-container" class="friends-list scrollable">
+        <!-- Dynamically rendered cards -->
+      </div>
     </div>
 
-    <!-- Error/Wrong Page Control -->
-    <div id="statusContainer">
-      <p id="errorMessage" class="warn-text">Detecting active tab...</p>
-      <button id="openLeetcodeBtn" class="btn secondary-btn">Go to LeetCode Contests</button>
+    <!-- TAB 2: CONTEST SEARCH VIEW (Original LeetSeek) -->
+    <div id="search-tab" class="tab-content">
+      <div class="header">
+        <span class="logo-icon">🔍</span>
+        <h1 class="logo-title">LeetSeek</h1>
+      </div>
+
+      <!-- Active Search Control -->
+      <div id="mainContainer" style="display: none;">
+        <p class="info-text">Open the search panel to locate specific users or keyword groups on the leaderboards.</p>
+        <button id="startSearchBtn" class="btn primary-btn">Start User Search</button>
+      </div>
+
+      <!-- Error/Wrong Page Control -->
+      <div id="statusContainer">
+        <p id="errorMessage" class="warn-text">Detecting active tab...</p>
+        <button id="openLeetcodeBtn" class="btn secondary-btn">Go to LeetCode Contests</button>
+      </div>
     </div>
   </div>
 

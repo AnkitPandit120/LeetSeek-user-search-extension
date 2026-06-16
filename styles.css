@@ -1,23 +1,543 @@
+/* CSS variables for consistent premium design system */
+:root {
+  --bg-primary: #121214;
+  --bg-card: #1a1a1e;
+  --bg-card-alt: #22222a;
+  --text-primary: #f8f9fa;
+  --text-secondary: #a0a0b0;
+  --accent-color: #ffa116;
+  --accent-hover: #ffb84d;
+  --danger-color: #ef4444;
+  --danger-hover: #ff5b5b;
+  --easy-color: #2ec4b6;
+  --medium-color: #ffb703;
+  --hard-color: #ff5b5b;
+  --rating-color: #2ec4b6;
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background-color: #1a1a1e;
-  color: #f8f9fa;
-  min-width: 250px;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  width: 380px;
+  box-sizing: border-box;
+}
+
+/* Scrollbar customization using modern CSS standards */
+.scrollable {
+  --scrollbar-thumb: #3a3a46;
+  --scrollbar-track: var(--bg-primary);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+
+/* Scrollbar fallback for WebKit browsers */
+@supports not (scrollbar-color: auto) {
+  .scrollable::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollable::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  .scrollable::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+  }
 }
 
 .popup-card {
   padding: 16px;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
 }
 
+/* Navigation Tabs Styling */
+.tabs-header {
+  display: flex;
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.tab-button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.tab-button.active {
+  color: var(--bg-primary);
+  background-color: var(--accent-color);
+}
+
+/* Tab contents rendering toggle */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Stalker View CSS */
+.header-stalker {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.logo-title-stalker {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+
+.logo-icon-img {
+  font-size: 18px;
+  display: inline-block;
+  animation: floatIcon 2s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.yellow-text {
+  color: var(--accent-color);
+}
+
+/* User Greeting Card */
+.user-greeting-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.greeting-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.greeting-text {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.greeting-text span {
+  color: var(--accent-color);
+}
+
+.change-user-link {
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.2s;
+}
+
+.change-user-link:hover {
+  color: var(--accent-color);
+}
+
+/* Onboarding view inside greeting card */
+.onboard-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.onboard-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.onboard-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.onboard-input-group input {
+  flex: 1;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.onboard-input-group input:focus {
+  border-color: var(--accent-color);
+}
+
+.onboard-input-group button {
+  padding: 8px 14px;
+}
+
+.greeting-loading {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Add Friend Section */
+.add-friend-section {
+  margin-bottom: 16px;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.input-group input {
+  flex: 1;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  border-color: var(--accent-color);
+}
+
+.btn {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  transition: background-color 0.2s, transform 0.1s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.primary-btn {
+  background-color: var(--accent-color);
+  color: var(--bg-primary);
+}
+
+.primary-btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.secondary-btn {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--accent-color);
+  width: 100%;
+}
+
+.secondary-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-color);
+}
+
+.status-msg {
+  font-size: 11px;
+  margin-top: 6px;
+  min-height: 14px;
+}
+
+.status-msg.error {
+  color: var(--danger-color);
+}
+
+.status-msg.success {
+  color: var(--easy-color);
+}
+
+/* Filter Section */
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-bar-container {
+  display: flex;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  align-items: center;
+}
+
+.search-bar-container input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.search-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent-color);
+  padding: 0 10px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.dropdown-select {
+  flex: 1;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 8px;
+  outline: none;
+  cursor: pointer;
+}
+
+.dropdown-select option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.refresh-btn {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--accent-color);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background-color: var(--bg-card-alt);
+  border-color: var(--accent-color);
+}
+
+.refresh-btn:active {
+  transform: scale(0.95);
+}
+
+.refresh-btn.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* Friends list container */
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 270px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Friend Card Styling */
+.friend-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.friend-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.friend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 20px; /* Leave space for delete button */
+}
+
+.friend-name-link {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+  transition: color 0.2s;
+}
+
+.friend-name-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.friend-delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.friend-delete-btn:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger-color);
+  transform: scale(1.1);
+}
+
+/* Grid Table inside Card */
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.stats-table th {
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-bottom: 4px;
+}
+
+.stats-table td {
+  text-align: center;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+/* Color codes matching the screenshot */
+.stats-table th:nth-child(1) { color: var(--text-primary); } /* Total */
+.stats-table th:nth-child(2) { color: var(--easy-color); }    /* Easy */
+.stats-table th:nth-child(3) { color: var(--medium-color); }  /* Medium */
+.stats-table th:nth-child(4) { color: var(--hard-color); }    /* Hard */
+.stats-table th:nth-child(5) { color: var(--rating-color); }  /* Rating */
+
+.stats-table td.total-val { color: var(--text-primary); }
+.stats-table td.easy-val { color: var(--easy-color); }
+.stats-table td.medium-val { color: var(--medium-color); }
+.stats-table td.hard-val { color: var(--hard-color); }
+.stats-table td.rating-val { color: var(--easy-color); } /* Using easy-color (tealish green) for rating text as per screenshot */
+
+/* Empty / No Friends Styling */
+.empty-friends {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 30px 10px;
+  font-style: italic;
+}
+
+/* Loading cards styling */
+.skeleton-card {
+  height: 60px;
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-alt) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: loadingSkeleton 1.5s infinite;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+@keyframes loadingSkeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Tab 2: Contest Search original styles */
 .header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 8px;
 }
 
@@ -29,20 +549,20 @@ body {
   font-size: 16px;
   font-weight: 600;
   margin: 0;
-  color: #f8f9fa;
+  color: var(--text-primary);
   letter-spacing: 0.5px;
 }
 
 .info-text {
   font-size: 12px;
-  color: #a0a0b0;
+  color: var(--text-secondary);
   line-height: 1.5;
   margin: 0 0 16px 0;
 }
 
 .warn-text {
   font-size: 12px;
-  color: #ef4444;
+  color: var(--danger-color);
   background-color: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 6px;
@@ -50,42 +570,4 @@ body {
   line-height: 1.4;
   margin: 0 0 16px 0;
   font-weight: 500;
-}
-
-.btn {
-  width: 100%;
-  padding: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 6px;
-  border: none;
-  transition: background-color 0.2s, transform 0.1s, border-color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn:active {
-  transform: scale(0.98);
-}
-
-.primary-btn {
-  background-color: #ffa116;
-  color: #121214;
-}
-
-.primary-btn:hover {
-  background-color: #ffb84d;
-}
-
-.secondary-btn {
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffa116;
-}
-
-.secondary-btn:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: #ffa116;
 }
