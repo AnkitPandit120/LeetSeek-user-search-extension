@@ -20,6 +20,25 @@
   --border-focus: rgba(255, 161, 22, 0.4);
 }
 
+body.light-theme {
+  --bg-primary: #f8f9fa;
+  --bg-gradient: linear-gradient(145deg, #f8f9fa 0%, #eef1f6 100%);
+  --bg-card: rgba(255, 255, 255, 0.75);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --bg-card-alt: rgba(0, 0, 0, 0.02);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-color: #ea580c;
+  --accent-hover: #c2410c;
+  --accent-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  --easy-color: #0d9488;
+  --medium-color: #d97706;
+  --hard-color: #dc2626;
+  --rating-color: #0284c7;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-focus: rgba(234, 88, 12, 0.4);
+}
+
 html {
   background-color: var(--bg-primary);
   margin: 0;
@@ -905,5 +924,40 @@ body {
   color: var(--text-secondary);
   font-style: italic;
   margin: 0;
+}
+
+/* Light Theme Overrides */
+body.light-theme .modal-content {
+  background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+body.light-theme .modal {
+  background-color: rgba(15, 23, 42, 0.35);
+}
+
+body.light-theme .chart-toggle-container {
+  background-color: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme .toggle-btn.active {
+  color: #ffffff;
+  background: var(--accent-gradient);
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.2);
+}
+
+body.light-theme .dropdown-select option {
+  background-color: #ffffff;
+  color: var(--text-primary);
+}
+
+body.light-theme .friend-name-link {
+  text-shadow: none;
+}
+
+body.light-theme .greeting-text span {
+  text-shadow: none;
 }
 

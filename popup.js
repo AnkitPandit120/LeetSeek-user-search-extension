@@ -97,6 +97,9 @@ if (typeof chrome === "undefined" || !chrome.storage || !chrome.storage.local) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Initialize theme
+  initTheme();
+
   // Initialize navigation tabs
   initTabs();
 
@@ -185,8 +188,57 @@ async function fetchLeetCodeStats(username) {
 }
 
 // ==========================================
-// Tab Navigation
+// Theme (Day/Night) Navigation
 // ==========================================
+
+function initTheme() {
+  const themeToggleBtn = document.getElementById("theme-toggle-btn");
+
+  chrome.storage.local.get("theme", (data) => {
+    const currentTheme = data.theme || "dark";
+    const body = document.body;
+    if (currentTheme === "light") {
+      body.classList.add("light-theme");
+      if (themeToggleBtn) {
+        themeToggleBtn.textContent = "🌙";
+        themeToggleBtn.title = "Toggle Night Mode";
+      }
+    } else {
+      body.classList.remove("light-theme");
+      if (themeToggleBtn) {
+        themeToggleBtn.textContent = "☀️";
+        themeToggleBtn.title = "Toggle Day Mode";
+      }
+    }
+  });
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      const body = document.body;
+      const isLight = body.classList.contains("light-theme");
+      if (isLight) {
+        body.classList.remove("light-theme");
+        themeToggleBtn.textContent = "☀️";
+        themeToggleBtn.title = "Toggle Day Mode";
+        chrome.storage.local.set({ theme: "dark" });
+      } else {
+        body.classList.add("light-theme");
+        themeToggleBtn.textContent = "🌙";
+        themeToggleBtn.title = "Toggle Night Mode";
+        chrome.storage.local.set({ theme: "light" });
+      }
+
+      // Redraw chart if modal is open
+      const chartModal = document.getElementById("chart-modal");
+      if (chartModal && chartModal.classList.contains("active")) {
+        chrome.storage.local.get("chartMetric", (data) => {
+          const metric = data.chartMetric || "solved";
+          drawProgressChart(metric);
+        });
+      }
+    });
+  }
+}
 
 function initTabs() {
   const tabButtons = document.querySelectorAll(".tab-button");
@@ -834,9 +886,10 @@ function drawProgressChart(metric) {
 
   chrome.storage.local.get("friends", (data) => {
     try {
+      const isLightTheme = document.body.classList.contains("light-theme");
       const friends = data.friends || [];
       if (friends.length === 0) {
-        ctx.fillStyle = "#a0a0b0";
+        ctx.fillStyle = isLightTheme ? "#64748b" : "#a0a0b0";
         ctx.font = "italic 13px 'Outfit', sans-serif";
         ctx.textAlign = "center";
         ctx.fillText("No friends tracked yet.", width / 2, height / 2);
@@ -850,9 +903,9 @@ function drawProgressChart(metric) {
       const chartWidth = width - paddingLeft - paddingRight;
       const chartHeight = height - paddingTop - paddingBottom;
 
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      ctx.strokeStyle = isLightTheme ? "rgba(0, 0, 0, 0.08)" : "rgba(255, 255, 255, 0.05)";
       ctx.lineWidth = 1;
-      ctx.fillStyle = "#a0a0b0";
+      ctx.fillStyle = isLightTheme ? "#64748b" : "#a0a0b0";
       ctx.font = "500 10px 'Outfit', sans-serif";
       ctx.textAlign = "right";
 
@@ -889,7 +942,7 @@ function drawProgressChart(metric) {
       }
 
       // Base line
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.strokeStyle = isLightTheme ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.15)";
       ctx.beginPath();
       ctx.moveTo(paddingLeft, paddingTop + chartHeight);
       ctx.lineTo(width - paddingRight, paddingTop + chartHeight);
@@ -907,7 +960,7 @@ function drawProgressChart(metric) {
         const name = friend.username;
 
         // Draw username labels
-        ctx.fillStyle = "#a0a0b0";
+        ctx.fillStyle = isLightTheme ? "#64748b" : "#a0a0b0";
         ctx.textAlign = "center";
         ctx.save();
         ctx.translate(x + barWidth / 2, paddingTop + chartHeight + 12);
@@ -956,7 +1009,7 @@ function drawProgressChart(metric) {
 
           // Draw total count number
           if (total > 0) {
-            ctx.fillStyle = "#f8f9fa";
+            ctx.fillStyle = isLightTheme ? "#1e293b" : "#f8f9fa";
             ctx.font = "700 9px monospace";
             ctx.fillText(total, x + barWidth / 2, currentY - 5);
           }
@@ -968,11 +1021,11 @@ function drawProgressChart(metric) {
             ctx.fillStyle = "#00d2fc"; // Rating light blue
             drawRoundedRect(ctx, x, yBaseline - hRating, barWidth, hRating, 3, true, true);
 
-            ctx.fillStyle = "#f8f9fa";
+            ctx.fillStyle = isLightTheme ? "#1e293b" : "#f8f9fa";
             ctx.font = "700 9px monospace";
             ctx.fillText(rating, x + barWidth / 2, yBaseline - hRating - 5);
           } else {
-            ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.fillStyle = isLightTheme ? "rgba(0, 0, 0, 0.35)" : "rgba(255, 255, 255, 0.25)";
             ctx.font = "italic 9px 'Outfit', sans-serif";
             ctx.fillText("N/A", x + barWidth / 2, yBaseline - 8);
           }
