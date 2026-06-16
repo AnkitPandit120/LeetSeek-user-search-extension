@@ -53,6 +53,7 @@
             <option value="total">Sort by Total Solved</option>
             <option value="rating">Sort by Rating</option>
           </select>
+          <button id="show-chart-btn" class="refresh-btn" title="View Progress Graph">📊</button>
           <button id="refresh-all-btn" class="refresh-btn" title="Refresh all statistics">🔄</button>
         </div>
       </div>
@@ -80,6 +81,25 @@
       <div id="statusContainer">
         <p id="errorMessage" class="warn-text">Detecting active tab...</p>
         <button id="openLeetcodeBtn" class="btn secondary-btn">Go to LeetCode Contests</button>
+      </div>
+    </div>
+
+    <!-- Chart Modal Overlay -->
+    <div id="chart-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Progress Graph 📊</h2>
+          <button id="close-modal-btn" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="chart-toggle-container">
+            <button id="chart-toggle-solved" class="toggle-btn active">Total Solved</button>
+            <button id="chart-toggle-rating" class="toggle-btn">Contest Rating</button>
+          </div>
+          <div class="canvas-container">
+            <canvas id="friends-chart" width="340" height="230"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>

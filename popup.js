@@ -1,3 +1,101 @@
+// ==========================================
+// Chrome API Mocking for Local Testing
+// ==========================================
+if (typeof chrome === "undefined" || !chrome.storage || !chrome.storage.local) {
+  window.chrome = {
+    storage: {
+      local: {
+        get: function(keys, callback) {
+          const res = {};
+          const processKeys = (keysList) => {
+            keysList.forEach(k => {
+              const val = localStorage.getItem(k);
+              try {
+                res[k] = val ? JSON.parse(val) : undefined;
+              } catch (e) {
+                res[k] = val;
+              }
+            });
+          };
+
+          if (typeof keys === "string") {
+            processKeys([keys]);
+          } else if (Array.isArray(keys)) {
+            processKeys(keys);
+          } else if (typeof keys === "object" && keys !== null) {
+            Object.keys(keys).forEach(k => {
+              const val = localStorage.getItem(k);
+              try {
+                res[k] = val ? JSON.parse(val) : keys[k];
+              } catch (e) {
+                res[k] = val;
+              }
+            });
+          }
+
+          if (callback) {
+            setTimeout(() => callback(res), 0);
+            return;
+          }
+          return Promise.resolve(res);
+        },
+        set: function(items, callback) {
+          Object.keys(items).forEach(k => {
+            localStorage.setItem(k, JSON.stringify(items[k]));
+          });
+          if (callback) {
+            setTimeout(callback, 0);
+            return;
+          }
+          return Promise.resolve();
+        }
+      }
+    },
+    tabs: {
+      query: function(queryInfo, callback) {
+        const tabsList = [{ id: 1, url: "https://leetcode.com/contest/" }];
+        if (callback) {
+          setTimeout(() => callback(tabsList), 0);
+          return;
+        }
+        return Promise.resolve(tabsList);
+      },
+      create: function(createProperties, callback) {
+        console.log("Mock chrome.tabs.create:", createProperties);
+        window.open(createProperties.url, "_blank");
+        if (callback) {
+          setTimeout(() => callback({}), 0);
+          return;
+        }
+        return Promise.resolve({});
+      },
+      sendMessage: function(tabId, message, options, responseCallback) {
+        if (typeof options === "function") {
+          responseCallback = options;
+          options = {};
+        }
+        console.log("Mock chrome.tabs.sendMessage:", tabId, message);
+        const resp = { status: "started" };
+        if (responseCallback) {
+          setTimeout(() => responseCallback(resp), 0);
+          return;
+        }
+        return Promise.resolve(resp);
+      }
+    },
+    scripting: {
+      executeScript: function(details, callback) {
+        console.log("Mock chrome.scripting.executeScript:", details);
+        if (callback) {
+          setTimeout(callback, 0);
+          return;
+        }
+        return Promise.resolve();
+      }
+    }
+  };
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   // Initialize navigation tabs
   initTabs();
@@ -14,7 +112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ==========================================
 
 const LEETCODE_GRAPHQL_QUERY = `
-query getUserProfileAndRanking($username: String!) {
+query getUserProfileRankingAndSubmissions($username: String!) {
   matchedUser(username: $username) {
     username
     submitStatsGlobal {
@@ -26,6 +124,12 @@ query getUserProfileAndRanking($username: String!) {
   }
   userContestRanking(username: $username) {
     rating
+  }
+  recentAcSubmissionList(username: $username, limit: 5) {
+    id
+    title
+    titleSlug
+    timestamp
   }
 }
 `;
@@ -64,13 +168,15 @@ async function fetchLeetCodeStats(username) {
     const hard = submissions.find(s => s.difficulty === "Hard")?.count ?? 0;
 
     const rating = result.data?.userContestRanking?.rating ?? null;
+    const recentSubmissions = result.data?.recentAcSubmissionList || [];
 
     return {
       total,
       easy,
       medium,
       hard,
-      rating
+      rating,
+      submissions: recentSubmissions
     };
   } catch (err) {
     console.error("fetchLeetCodeStats error:", err);
@@ -137,6 +243,9 @@ function initStalker() {
     }
     renderGreetingOnboarding();
     renderFriendsList();
+
+    // Auto-refresh friend statistics silently on popup load
+    refreshAllFriendsSilently();
   });
 
   // Add friend event triggers
@@ -165,6 +274,44 @@ function initStalker() {
 
   // Refresh all stats button trigger
   document.getElementById("refresh-all-btn").addEventListener("click", refreshAllFriends);
+
+  // Graph Modal Event Triggers
+  const chartModal = document.getElementById("chart-modal");
+  document.getElementById("show-chart-btn").addEventListener("click", () => {
+    chartModal.classList.add("active");
+    chrome.storage.local.get("chartMetric", (data) => {
+      const metric = data.chartMetric || "solved";
+      setActiveChartToggle(metric);
+      drawProgressChart(metric);
+    });
+  });
+
+  document.getElementById("close-modal-btn").addEventListener("click", () => {
+    chartModal.classList.remove("active");
+  });
+
+  chartModal.addEventListener("click", (e) => {
+    if (e.target === chartModal) {
+      chartModal.classList.remove("active");
+    }
+  });
+
+  const toggleSolved = document.getElementById("chart-toggle-solved");
+  const toggleRating = document.getElementById("chart-toggle-rating");
+
+  toggleSolved.addEventListener("click", () => {
+    setActiveChartToggle("solved");
+    chrome.storage.local.set({ chartMetric: "solved" }, () => {
+      drawProgressChart("solved");
+    });
+  });
+
+  toggleRating.addEventListener("click", () => {
+    setActiveChartToggle("rating");
+    chrome.storage.local.set({ chartMetric: "rating" }, () => {
+      drawProgressChart("rating");
+    });
+  });
 }
 
 // Render the user greeting banner or onboarding screen
@@ -269,8 +416,8 @@ function renderFriendsList() {
       } else if (sortType === "total") {
         return (b.stats.total || 0) - (a.stats.total || 0);
       } else if (sortType === "rating") {
-        const ratingA = a.stats.rating !== null ? a.stats.rating : 0;
-        const ratingB = b.stats.rating !== null ? b.stats.rating : 0;
+        const ratingA = (a.stats && a.stats.rating != null) ? a.stats.rating : 0;
+        const ratingB = (b.stats && b.stats.rating != null) ? b.stats.rating : 0;
         return ratingB - ratingA;
       }
       return 0;
@@ -287,7 +434,54 @@ function renderFriendsList() {
     }
 
     container.innerHTML = friends.map(friend => {
-      const ratingVal = friend.stats.rating !== null ? Math.round(friend.stats.rating) : "N/A";
+      const ratingVal = (friend.stats && friend.stats.rating != null) ? Math.round(friend.stats.rating) : "N/A";
+      
+      // Render submissions html
+      const submissions = friend.submissions || [];
+      let submissionsHtml = "";
+      if (submissions.length > 0) {
+        const items = submissions.slice(0, 5).map(sub => {
+          const relTime = getRelativeTime(sub.timestamp);
+          return `
+            <li class="submission-item">
+              <a href="https://leetcode.com/problems/${escapeHtml(sub.titleSlug)}/" class="submission-link" title="Solve Problem">
+                ${escapeHtml(sub.title)}
+                <svg class="mini-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+              <span class="submission-time">${escapeHtml(relTime)}</span>
+            </li>
+          `;
+        }).join("");
+
+        submissionsHtml = `
+          <details class="friend-submissions-details">
+            <summary class="submissions-title">
+              Recent AC <span class="arrow">▼</span>
+            </summary>
+            <div class="submissions-content">
+              <ul class="submissions-list">
+                ${items}
+              </ul>
+            </div>
+          </details>
+        `;
+      } else {
+        submissionsHtml = `
+          <details class="friend-submissions-details">
+            <summary class="submissions-title">
+              Recent AC <span class="arrow">▼</span>
+            </summary>
+            <div class="submissions-content">
+              <p class="no-submissions">No recent submissions found</p>
+            </div>
+          </details>
+        `;
+      }
+
       return `
         <div class="friend-card">
           <div class="friend-header">
@@ -326,6 +520,7 @@ function renderFriendsList() {
               </tr>
             </tbody>
           </table>
+          ${submissionsHtml}
         </div>
       `;
     }).join("");
@@ -341,6 +536,15 @@ function renderFriendsList() {
 
     // 5. Attach Redirect Listeners to profile links
     container.querySelectorAll(".friend-name-link").forEach(link => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const url = link.getAttribute("href");
+        chrome.tabs.create({ url });
+      });
+    });
+
+    // 6. Attach Redirect Listeners to submission links
+    container.querySelectorAll(".submission-link").forEach(link => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
         const url = link.getAttribute("href");
@@ -389,7 +593,14 @@ async function addFriend() {
     // Add new friend to storage array
     friends.push({
       username: username,
-      stats: stats,
+      stats: {
+        total: stats.total,
+        easy: stats.easy,
+        medium: stats.medium,
+        hard: stats.hard,
+        rating: stats.rating
+      },
+      submissions: stats.submissions || [],
       lastUpdated: Date.now()
     });
 
@@ -445,8 +656,15 @@ async function refreshAllFriends() {
         const stats = await fetchLeetCodeStats(friend.username);
         if (stats) {
           return {
-            ...friend,
-            stats,
+            username: friend.username,
+            stats: {
+              total: stats.total,
+              easy: stats.easy,
+              medium: stats.medium,
+              hard: stats.hard,
+              rating: stats.rating
+            },
+            submissions: stats.submissions || [],
             lastUpdated: Date.now()
           };
         }
@@ -562,5 +780,281 @@ async function triggerSearch(tabId) {
     window.close();
   } else {
     throw new Error("Invalid response status from content script");
+  }
+}
+
+// ==========================================
+// Chart Drawing & Helper Methods
+// ==========================================
+
+function getRelativeTime(timestamp) {
+  const diff = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10);
+  if (diff < 0) return "just now";
+  if (diff < 60) return "just now";
+  const mins = Math.floor(diff / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
+
+function setActiveChartToggle(metric) {
+  const toggleSolved = document.getElementById("chart-toggle-solved");
+  const toggleRating = document.getElementById("chart-toggle-rating");
+  if (!toggleSolved || !toggleRating) return;
+
+  if (metric === "solved") {
+    toggleSolved.classList.add("active");
+    toggleRating.classList.remove("active");
+  } else {
+    toggleSolved.classList.remove("active");
+    toggleRating.classList.add("active");
+  }
+}
+
+function drawProgressChart(metric) {
+  const canvas = document.getElementById("friends-chart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  // Fix: Use fixed layout dimensions since getBoundingClientRect() is 0 when modal is hidden or transitioning
+  const width = 340;
+  const height = 230;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, width, height);
+
+  chrome.storage.local.get("friends", (data) => {
+    try {
+      const friends = data.friends || [];
+      if (friends.length === 0) {
+        ctx.fillStyle = "#a0a0b0";
+        ctx.font = "italic 13px 'Outfit', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("No friends tracked yet.", width / 2, height / 2);
+        return;
+      }
+
+      const paddingLeft = 35;
+      const paddingRight = 15;
+      const paddingTop = 30;
+      const paddingBottom = 35;
+      const chartWidth = width - paddingLeft - paddingRight;
+      const chartHeight = height - paddingTop - paddingBottom;
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#a0a0b0";
+      ctx.font = "500 10px 'Outfit', sans-serif";
+      ctx.textAlign = "right";
+
+      // 1. Calculate Maximum Range with safety guards
+      let maxVal = 0;
+      if (metric === "solved") {
+        friends.forEach(f => {
+          const total = (f.stats && f.stats.total) || 0;
+          if (total > maxVal) maxVal = total;
+        });
+      } else {
+        friends.forEach(f => {
+          const rating = (f.stats && f.stats.rating !== null && f.stats.rating !== undefined) ? Math.round(f.stats.rating) : 0;
+          if (rating > maxVal) maxVal = rating;
+        });
+      }
+
+      if (maxVal === 0) maxVal = 100;
+      const ySegments = 4;
+      const yStep = Math.ceil(maxVal / ySegments / 10) * 10;
+      maxVal = yStep * ySegments;
+
+      // Draw grid lines
+      for (let i = 0; i <= ySegments; i++) {
+        const val = yStep * i;
+        const y = paddingTop + chartHeight - (val / maxVal) * chartHeight;
+
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, y);
+        ctx.lineTo(width - paddingRight, y);
+        ctx.stroke();
+
+        ctx.fillText(val, paddingLeft - 8, y + 3);
+      }
+
+      // Base line
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, paddingTop + chartHeight);
+      ctx.lineTo(width - paddingRight, paddingTop + chartHeight);
+      ctx.stroke();
+
+      // 2. Draw Column Bars
+      const barSpacing = 16;
+      const numFriends = friends.length;
+      const totalSpacing = barSpacing * (numFriends - 1);
+      const barWidth = Math.max(12, Math.min(45, (chartWidth - totalSpacing) / numFriends));
+      const startX = paddingLeft + (chartWidth - (barWidth * numFriends + barSpacing * (numFriends - 1))) / 2;
+
+      friends.forEach((friend, idx) => {
+        const x = startX + idx * (barWidth + barSpacing);
+        const name = friend.username;
+
+        // Draw username labels
+        ctx.fillStyle = "#a0a0b0";
+        ctx.textAlign = "center";
+        ctx.save();
+        ctx.translate(x + barWidth / 2, paddingTop + chartHeight + 12);
+        ctx.font = "600 9px 'Outfit', sans-serif";
+        let displayName = name;
+        if (displayName.length > 8) displayName = displayName.substring(0, 6) + "..";
+        ctx.fillText(displayName, 0, 0);
+        ctx.restore();
+
+        const yBaseline = paddingTop + chartHeight;
+
+        if (metric === "solved") {
+          const easy = (friend.stats && friend.stats.easy) || 0;
+          const medium = (friend.stats && friend.stats.medium) || 0;
+          const hard = (friend.stats && friend.stats.hard) || 0;
+          const total = (friend.stats && friend.stats.total) || 0;
+
+          const hEasy = (easy / maxVal) * chartHeight;
+          const hMedium = (medium / maxVal) * chartHeight;
+          const hHard = (hard / maxVal) * chartHeight;
+
+          let currentY = yBaseline;
+
+          // Easy Segment (Teal)
+          if (easy > 0) {
+            ctx.fillStyle = "#2ec4b6";
+            const roundTop = (medium === 0 && hard === 0);
+            drawRoundedRect(ctx, x, currentY - hEasy, barWidth, hEasy, 2, true, roundTop);
+            currentY -= hEasy;
+          }
+          // Medium Segment (Orange/Yellow)
+          if (medium > 0) {
+            ctx.fillStyle = "#ffb703";
+            const roundBottom = (easy === 0);
+            const roundTop = (hard === 0);
+            drawRoundedRect(ctx, x, currentY - hMedium, barWidth, hMedium, 2, roundBottom, roundTop);
+            currentY -= hMedium;
+          }
+          // Hard Segment (Red)
+          if (hard > 0) {
+            ctx.fillStyle = "#ff5b5b";
+            const roundBottom = (easy === 0 && medium === 0);
+            drawRoundedRect(ctx, x, currentY - hHard, barWidth, hHard, 2, roundBottom, true);
+            currentY -= hHard;
+          }
+
+          // Draw total count number
+          if (total > 0) {
+            ctx.fillStyle = "#f8f9fa";
+            ctx.font = "700 9px monospace";
+            ctx.fillText(total, x + barWidth / 2, currentY - 5);
+          }
+        } else {
+          const rating = (friend.stats && friend.stats.rating !== null && friend.stats.rating !== undefined) ? Math.round(friend.stats.rating) : 0;
+          const hRating = (rating / maxVal) * chartHeight;
+
+          if (rating > 0) {
+            ctx.fillStyle = "#00d2fc"; // Rating light blue
+            drawRoundedRect(ctx, x, yBaseline - hRating, barWidth, hRating, 3, true, true);
+
+            ctx.fillStyle = "#f8f9fa";
+            ctx.font = "700 9px monospace";
+            ctx.fillText(rating, x + barWidth / 2, yBaseline - hRating - 5);
+          } else {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.font = "italic 9px 'Outfit', sans-serif";
+            ctx.fillText("N/A", x + barWidth / 2, yBaseline - 8);
+          }
+        }
+      });
+    } catch (err) {
+      console.error("Error drawing progress chart callback:", err);
+    }
+  });
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius, roundBottom = true, roundTop = true) {
+  if (height <= 0) return;
+  ctx.beginPath();
+  if (roundTop) {
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  } else {
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + width, y);
+  }
+
+  if (roundBottom) {
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  } else {
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x, y + height);
+  }
+
+  if (roundTop) {
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+  } else {
+    ctx.lineTo(x, y);
+  }
+  ctx.fill();
+}
+
+async function refreshAllFriendsSilently() {
+  try {
+    const data = await chrome.storage.local.get("friends");
+    const friends = data.friends || [];
+    if (friends.length === 0) return;
+
+    const updatedFriends = [];
+    const fetchPromises = friends.map(async (friend) => {
+      try {
+        const stats = await fetchLeetCodeStats(friend.username);
+        if (stats) {
+          return {
+            username: friend.username,
+            stats: {
+              total: stats.total,
+              easy: stats.easy,
+              medium: stats.medium,
+              hard: stats.hard,
+              rating: stats.rating
+            },
+            submissions: stats.submissions || [],
+            lastUpdated: Date.now()
+          };
+        }
+      } catch (e) {
+        console.warn(`Failed to silently update stats for ${friend.username}:`, e);
+      }
+      return friend; // Keep cached stats on failure
+    });
+
+    const results = await Promise.allSettled(fetchPromises);
+    results.forEach(res => {
+      if (res.status === "fulfilled") {
+        updatedFriends.push(res.value);
+      }
+    });
+
+    await chrome.storage.local.set({ friends: updatedFriends });
+    renderFriendsList();
+  } catch (err) {
+    console.error("Silent refresh error:", err);
   }
 }
