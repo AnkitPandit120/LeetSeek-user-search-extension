@@ -192,39 +192,43 @@ async function fetchLeetCodeStats(username) {
 // ==========================================
 
 function initTheme() {
-  const themeToggleBtn = document.getElementById("theme-toggle-btn");
+  const themeToggleBtns = document.querySelectorAll(".theme-toggle-btn");
+
+  const updateBtns = (theme) => {
+    themeToggleBtns.forEach(btn => {
+      if (theme === "light") {
+        btn.textContent = "🌙";
+        btn.title = "Toggle Night Mode";
+      } else {
+        btn.textContent = "☀️";
+        btn.title = "Toggle Day Mode";
+      }
+    });
+  };
 
   chrome.storage.local.get("theme", (data) => {
     const currentTheme = data.theme || "dark";
     const body = document.body;
     if (currentTheme === "light") {
       body.classList.add("light-theme");
-      if (themeToggleBtn) {
-        themeToggleBtn.textContent = "🌙";
-        themeToggleBtn.title = "Toggle Night Mode";
-      }
+      updateBtns("light");
     } else {
       body.classList.remove("light-theme");
-      if (themeToggleBtn) {
-        themeToggleBtn.textContent = "☀️";
-        themeToggleBtn.title = "Toggle Day Mode";
-      }
+      updateBtns("dark");
     }
   });
 
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener("click", () => {
+  themeToggleBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
       const body = document.body;
       const isLight = body.classList.contains("light-theme");
       if (isLight) {
         body.classList.remove("light-theme");
-        themeToggleBtn.textContent = "☀️";
-        themeToggleBtn.title = "Toggle Day Mode";
+        updateBtns("dark");
         chrome.storage.local.set({ theme: "dark" });
       } else {
         body.classList.add("light-theme");
-        themeToggleBtn.textContent = "🌙";
-        themeToggleBtn.title = "Toggle Night Mode";
+        updateBtns("light");
         chrome.storage.local.set({ theme: "light" });
       }
 
@@ -237,7 +241,7 @@ function initTheme() {
         });
       }
     });
-  }
+  });
 }
 
 function initTabs() {
