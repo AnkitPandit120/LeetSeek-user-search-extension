@@ -1002,28 +1002,29 @@ body.light-theme .greeting-text span {
 
 /* Footer Signature Styles */
 .footer-signature {
-  display: block;
+  display: inline-block;
+  margin: 18px auto 0 auto;
   text-align: center;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  opacity: 0.65;
-  margin-top: 18px;
-  letter-spacing: 0.5px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent-color);
+  background-color: var(--bg-card-alt);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 4px 12px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
-  transition: color 0.3s, opacity 0.3s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .footer-signature:hover {
-  color: var(--accent-color);
-  opacity: 0.95;
-}
-
-body.light-theme .footer-signature:hover {
-  color: var(--accent-color);
-  opacity: 0.95;
+  background-color: var(--bg-card);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 /* Light Theme Component Overrides & Custom SVGs */
