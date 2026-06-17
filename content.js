@@ -549,6 +549,21 @@
       const prefillState = saved ? JSON.parse(saved) : {};
       showSetupUI(dialog, prefillState);
       sendResponse({ status: "started" });
+
+    } else if (request.action === "startSearchWithParams") {
+      // Validate contest page
+      const contestMatch = window.location.pathname.match(/\/contest\/([^\/]+)/);
+      const contestName = contestMatch ? contestMatch[1] : null;
+      if (!contestName || contestName === "api" || contestName === "ranking") {
+        sendResponse({ status: "failed", reason: "invalid_page" });
+        return;
+      }
+
+      const state = request.state;
+      // Persist state and launch search immediately (skip setup UI)
+      sessionStorage.setItem('leetcode_search_state', JSON.stringify(state));
+      executeSearchFlow(state);
+      sendResponse({ status: "started" });
     }
   });
 })();
