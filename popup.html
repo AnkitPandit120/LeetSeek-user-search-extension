@@ -89,7 +89,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: CONTEST SEARCH VIEW (Original LeetSeek) -->
+    <!-- TAB 2: CONTEST SEARCH VIEW (LeetSeek) -->
     <div id="search-tab" class="tab-content">
       <div class="header">
         <div class="header-left">
@@ -99,16 +99,52 @@
         <button class="theme-toggle-btn refresh-btn" title="Toggle Day Mode">☀️</button>
       </div>
 
-      <!-- Active Search Control -->
-      <div id="mainContainer" style="display: none;">
-        <p class="info-text">Open the search panel to locate specific users or keyword groups on the leaderboards.</p>
-        <button id="startSearchBtn" class="btn primary-btn">Start User Search</button>
-      </div>
+      <!-- Search Form — always visible -->
+      <div id="search-form-container" class="seek-form-wrapper">
 
-      <!-- Error/Wrong Page Control -->
-      <div id="statusContainer">
-        <p id="errorMessage" class="warn-text">Detecting active tab...</p>
-        <button id="openLeetcodeBtn" class="btn secondary-btn">Go to LeetCode Contests</button>
+        <!-- Not-on-contest overlay (shown when user isn't on a LeetCode contest page) -->
+        <div id="seek-not-contest-overlay" class="seek-overlay seek-overlay-hidden">
+          <div class="seek-overlay-icon">🏆</div>
+          <p class="seek-overlay-title">Open a Contest Ranking Page</p>
+          <p class="seek-overlay-desc">Go to a specific contest → click <strong>Ranking</strong>, then come back here.<br><em>e.g. /contest/weekly-contest-507/ranking/</em></p>
+        </div>
+
+        <!-- Actual form (blurred when not on contest page) -->
+        <div id="seek-form-inner">
+          <div class="seek-form-group">
+            <label class="seek-label">Keywords <span class="seek-label-hint">(comma-separated)</span></label>
+            <textarea id="keywordsInput" class="seek-textarea" placeholder="e.g. tech, fc, tourist"></textarea>
+          </div>
+
+          <div class="seek-form-group">
+            <label class="seek-label">Match Type</label>
+            <div class="seek-match-row">
+              <label class="seek-match-option" id="matchExactLabel">
+                <input type="radio" name="matchType" id="matchExact" value="exact" checked />
+                Exact Name
+              </label>
+              <label class="seek-match-option" id="matchPartialLabel">
+                <input type="radio" name="matchType" id="matchPartial" value="partial" />
+                Keyword/Partial
+              </label>
+            </div>
+          </div>
+
+          <div class="seek-page-row">
+            <div class="seek-form-group">
+              <label class="seek-label">Start Page</label>
+              <input type="number" id="startPageInput" class="seek-input" value="1" min="1" />
+            </div>
+            <div class="seek-form-group">
+              <label class="seek-label">End Page</label>
+              <input type="number" id="endPageInput" class="seek-input" value="10" min="1" />
+            </div>
+          </div>
+
+          <div id="seek-error-msg" class="seek-error-hidden"></div>
+
+          <button id="startSearchBtn" class="btn primary-btn seek-start-btn">Start Search</button>
+        </div>
       </div>
     </div>
 
