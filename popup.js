@@ -258,24 +258,18 @@ function initTabs() {
   const tabContents = document.querySelectorAll(".tab-content");
 
   chrome.storage.local.get("activeTab", (data) => {
-    const activeTab = data.activeTab || "stalker-tab";
+    const activeTab = "stalker-tab";
 
-    // Set initial active states
     tabButtons.forEach(btn => {
-      if (btn.getAttribute("data-tab") === activeTab) {
-        btn.classList.add("active");
-      } else {
-        btn.classList.remove("active");
-      }
+      btn.classList.toggle("active", btn.getAttribute("data-tab") === activeTab);
+    });
+    tabContents.forEach(content => {
+      content.classList.toggle("active", content.getAttribute("id") === activeTab);
     });
 
-    tabContents.forEach(content => {
-      if (content.getAttribute("id") === activeTab) {
-        content.classList.add("active");
-      } else {
-        content.classList.remove("active");
-      }
-    });
+    if (activeTab === "search-tab") {
+      checkAndApplyContestState();
+    }
   });
 
   tabButtons.forEach(btn => {
@@ -289,8 +283,39 @@ function initTabs() {
       document.getElementById(targetTab).classList.add("active");
 
       chrome.storage.local.set({ activeTab: targetTab });
+
+      if (targetTab === "search-tab") {
+        checkAndApplyContestState();
+      }
     });
   });
+}
+
+// Checks if current active tab is a LeetCode contest page.
+// Blurs the form and shows overlay if not; clears blur if yes.
+async function checkAndApplyContestState() {
+  const formInner = document.getElementById("seek-form-inner");
+  const overlay   = document.getElementById("seek-not-contest-overlay");
+  if (!formInner || !overlay) return;
+
+  // Valid: leetcode.com/contest/{contest-name}/ranking[/page]
+  const CONTEST_RANKING_RE = /leetcode\.com\/contest\/[^\/]+\/ranking/;
+
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const isContest = tab?.url && CONTEST_RANKING_RE.test(tab.url);
+
+    if (isContest) {
+      formInner.classList.remove("seek-form-blurred");
+      overlay.className = "seek-overlay seek-overlay-hidden";
+    } else {
+      formInner.classList.add("seek-form-blurred");
+      overlay.className = "seek-overlay seek-overlay-visible";
+    }
+  } catch (e) {
+    formInner.classList.add("seek-form-blurred");
+    overlay.className = "seek-overlay seek-overlay-visible";
+  }
 }
 
 // ==========================================
@@ -775,67 +800,107 @@ function escapeHtml(str) {
 // ==========================================
 
 async function initContestSearch() {
-  const statusContainer = document.getElementById("statusContainer");
-  const mainContainer = document.getElementById("mainContainer");
   const startSearchBtn = document.getElementById("startSearchBtn");
-  const openLeetcodeBtn = document.getElementById("openLeetcodeBtn");
-  const errorMessage = document.getElementById("errorMessage");
+  const errorMsg = document.getElementById("seek-error-msg");
 
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.url) {
-      showErrorState("No active tab found. Please select a LeetCode page.");
+  if (!startSearchBtn) return;
+
+  startSearchBtn.addEventListener("click", async () => {
+    // Clear previous error
+    hideError();
+
+    // Read form values
+    const keywordsRaw = document.getElementById("keywordsInput")?.value?.trim() || "";
+    const matchType = document.querySelector('input[name="matchType"]:checked')?.value || "exact";
+    const startPage = parseInt(document.getElementById("startPageInput")?.value) || 1;
+    const endPage = parseInt(document.getElementById("endPageInput")?.value) || 10;
+
+    // Validate keywords
+    if (!keywordsRaw) {
+      showError("Please enter at least one keyword.");
       return;
     }
 
-    const isContestPage = tab.url.startsWith("https://leetcode.com/contest/");
+    const keywords = keywordsRaw.split(",").map(k => k.trim().toLowerCase()).filter(Boolean);
+
+    if (endPage < startPage) {
+      showError("End page must be greater than or equal to Start page.");
+      return;
+    }
+
+    // Check active tab
+    let tab;
+    try {
+      [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    } catch (e) {
+      showError("Could not query active tab.");
+      return;
+    }
+
+    // Valid: leetcode.com/contest/{contest-name}/ranking[/page]
+    const CONTEST_RANKING_RE = /leetcode\.com\/contest\/[^\/]+\/ranking/;
+    const isContestPage = tab?.url && CONTEST_RANKING_RE.test(tab.url);
     if (!isContestPage) {
-      showErrorState("You are not on a LeetCode contest page. Please open a contest ranking page first.");
+      // Should not reach here if overlay is shown, but guard anyway
+      showError("Please open a LeetCode contest ranking page first.");
       return;
     }
 
-    // Active contest page detected: show control panel
-    mainContainer.style.display = "block";
-    statusContainer.style.display = "none";
+    // Launch search
+    startSearchBtn.disabled = true;
+    startSearchBtn.textContent = "Launching...";
 
-    startSearchBtn.addEventListener("click", async () => {
-      startSearchBtn.disabled = true;
-      startSearchBtn.textContent = "Connecting...";
-      try {
-        await triggerSearch(tab.id);
-      } catch (err) {
-        console.warn("Script context lost. Attempting programmatic content.js re-injection...", err);
-        try {
-          await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ["content.js"]
-          });
-          await triggerSearch(tab.id);
-        } catch (injectionErr) {
-          console.error("Re-injection failed:", injectionErr);
-          alert("Failed to initialize the search panel. Please refresh the LeetCode tab and try again.");
-          startSearchBtn.disabled = false;
-          startSearchBtn.textContent = "Start User Search";
-        }
-      }
-    });
+    const state = {
+      keywords,
+      matchType,
+      startPage,
+      endPage,
+      currentPage: startPage,
+      matches: [],
+      isActive: true
+    };
 
-  } catch (error) {
-    console.error("Popup initiation error:", error);
-    showErrorState("An unexpected error occurred in the extension.");
-  }
-
-  function showErrorState(message) {
-    mainContainer.style.display = "none";
-    statusContainer.style.display = "block";
-    errorMessage.textContent = message;
-  }
-
-  if (openLeetcodeBtn) {
-    openLeetcodeBtn.addEventListener("click", () => {
-      chrome.tabs.create({ url: "https://leetcode.com/contest/" });
+    try {
+      await sendSearchMessage(tab.id, state);
       window.close();
-    });
+    } catch (err) {
+      // Re-inject content.js if context is lost
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ["content.js"]
+        });
+        await sendSearchMessage(tab.id, state);
+        window.close();
+      } catch (injectionErr) {
+        console.error("Re-injection failed:", injectionErr);
+        showError("Failed to launch. Please refresh the LeetCode tab and try again.");
+        startSearchBtn.disabled = false;
+        startSearchBtn.textContent = "Start Search";
+      }
+    }
+  });
+
+  function showError(msg) {
+    if (!errorMsg) return;
+    errorMsg.textContent = msg;
+    errorMsg.className = "seek-error-visible";
+  }
+
+  function hideError() {
+    if (!errorMsg) return;
+    errorMsg.textContent = "";
+    errorMsg.className = "seek-error-hidden";
+  }
+}
+
+async function sendSearchMessage(tabId, state) {
+  const response = await chrome.tabs.sendMessage(tabId, {
+    action: "startSearchWithParams",
+    state
+  });
+  if (!response || response.status !== "started") {
+    throw new Error("Invalid response from content script");
   }
 }
 
@@ -997,27 +1062,27 @@ function drawProgressChart(metric) {
 
           let currentY = yBaseline;
 
-          // Easy Segment (Teal)
-          if (easy > 0) {
-            ctx.fillStyle = "#2ec4b6";
-            const roundTop = (medium === 0 && hard === 0);
-            drawRoundedRect(ctx, x, currentY - hEasy, barWidth, hEasy, 2, true, roundTop);
-            currentY -= hEasy;
+          // Hard Segment (Red) — bottom
+          if (hard > 0) {
+            ctx.fillStyle = "#ff5b5b";
+            const roundTop = (medium === 0 && easy === 0);
+            drawRoundedRect(ctx, x, currentY - hHard, barWidth, hHard, 2, true, roundTop);
+            currentY -= hHard;
           }
-          // Medium Segment (Orange/Yellow)
+          // Medium Segment (Orange/Yellow) — middle
           if (medium > 0) {
             ctx.fillStyle = "#ffb703";
-            const roundBottom = (easy === 0);
-            const roundTop = (hard === 0);
+            const roundBottom = (hard === 0);
+            const roundTop = (easy === 0);
             drawRoundedRect(ctx, x, currentY - hMedium, barWidth, hMedium, 2, roundBottom, roundTop);
             currentY -= hMedium;
           }
-          // Hard Segment (Red)
-          if (hard > 0) {
-            ctx.fillStyle = "#ff5b5b";
-            const roundBottom = (easy === 0 && medium === 0);
-            drawRoundedRect(ctx, x, currentY - hHard, barWidth, hHard, 2, roundBottom, true);
-            currentY -= hHard;
+          // Easy Segment (Teal/Blue) — top
+          if (easy > 0) {
+            ctx.fillStyle = "#2ec4b6";
+            const roundBottom = (hard === 0 && medium === 0);
+            drawRoundedRect(ctx, x, currentY - hEasy, barWidth, hEasy, 2, roundBottom, true);
+            currentY -= hEasy;
           }
 
           // Draw total count number
